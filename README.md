@@ -1,124 +1,43 @@
-# CSAI-382 · Week 2 · Lab 2.6 — Curated Data Set
+# Pipeline Repository Starter
 
-This repository is a template for your Databricks lab submission. Replace the placeholder text with your own notes and screenshots as you work through the assignment.
+This repository is the starter template for the CSAI-382 data pipeline project. It gives you a clean folder layout to organize Databricks or Jupyter notebooks, SQL scripts, automation code, and small sample datasets while you connect the repo to Databricks.
 
-## Student Information
-- **Name:** _Your Name_
-- **Section / Instructor:** _e.g., Section 1 — Prof. Smith_
-- **Date Submitted:** _MM/DD/YYYY_
+## Purpose
+- Keep all pipeline assets (notebooks, SQL, automation, data samples) in one GitHub repository.
+- Practice saving notebooks to GitHub through a Databricks-connected repo.
+- Document what each folder is for so teammates and instructors can navigate quickly.
 
-## Objective
-Transform the sample **DeviceMessage** (sensor-level) and **RapidStepTest** (test-level) JSON datasets into a single machine learning training table. You will validate schemas, perform time-window joins, engineer features, design labels, export results, and run lightweight quality checks.
-
-## Prerequisites
-- Databricks Community or institutional workspace with a Python cluster
-- Familiarity with PySpark DataFrames
-- Access to the sample JSON listed in this README
-
-## Getting Started
-1. Open Databricks and create a new Python notebook.
-2. Copy the **Sample Data Setup** cell below into the first notebook cell (or upload JSON files).
-3. Work through each lab part (A–F), documenting your progress and observations directly in the notebook.
-
-## Sample Data Setup
-```python
-# ---------- SAMPLE DATA (edit/extend as needed) ----------
-device_json = [
-  {
-    "messageOrigin": "DEVICE",
-    "sessionKey": None,
-    "message": "Test Completed",
-    "deviceId": "007",
-    "date": 1659538351527,
-    "sensorType": "ultraSonicSensor",
-    "distance": "1cm",
-    "timestamp": 1659538351527
-  }
-]
-
-rapid_json = [
-  {
-    "token": "8bd85cf8-b4ae-4de0-9475-1ee19bdc517d",
-    "startTime": 1741118938636,
-    "stepPoints": [1764, 1016, 950, 797, 819, 653, 695, 677, 702, 703, 786, 711, 782, 654, 619, 604, 695, 638, 623, 643, 698, 649, 611, 686, 638, 685, 559, 767, 620, 612],
-    "stopTime": 1741118960692,
-    "testTime": 22056,
-    "totalSteps": 30,
-    "customer": "scmurdock@gmail.com",
-    "deviceId": "007"
-  }
-]
-# --------------------------------------------------------
-
-from pyspark.sql import functions as F, types as T
-
-device_schema = T.StructType([
-    T.StructField("messageOrigin", T.StringType(), True),
-    T.StructField("sessionKey", T.StringType(), True),
-    T.StructField("message", T.StringType(), True),
-    T.StructField("deviceId", T.StringType(), True),
-    T.StructField("date", T.LongType(), True),
-    T.StructField("sensorType", T.StringType(), True),
-    T.StructField("distance", T.StringType(), True),
-    T.StructField("timestamp", T.LongType(), True)
-])
-
-rapid_schema = T.StructType([
-    T.StructField("token", T.StringType(), True),
-    T.StructField("startTime", T.LongType(), True),
-    T.StructField("stepPoints", T.ArrayType(T.IntegerType()), True),
-    T.StructField("stopTime", T.LongType(), True),
-    T.StructField("testTime", T.LongType(), True),
-    T.StructField("totalSteps", T.IntegerType(), True),
-    T.StructField("customer", T.StringType(), True),
-    T.StructField("deviceId", T.StringType(), True)
-])
-
-device_df = spark.createDataFrame(device_json, schema=device_schema)
-rapid_df  = spark.createDataFrame(rapid_json,  schema=rapid_schema)
+## Repository Structure
+```
+├── notebooks/
+├── sql/
+├── etl_pipeline/
+├── data_samples/
+└── README.md
 ```
 
-## Lab Tasks
-Document your work under the headings below. Include code snippets, results, and short reflections where appropriate.
+- **notebooks/** — Databricks or Jupyter notebooks used for ETL tasks.
+- **sql/** — Independent SQL transformation files.
+- **etl_pipeline/** — Python scripts or workflow definitions used for automation.
+- **data_samples/** — Small example datasets for testing (starter Parquet samples included).
+- **README.md** — Overview of the project and quick instructions for using the repo.
 
-### Part A — Validate & Clean
-- Cast columns, parse units, and confirm required fields.
-- Record any data-quality concerns.
+## Getting Started
+1. Accept the GitHub Classroom assignment to create your repository.
+2. In Databricks, open **Repos → Add Repo**, link your GitHub account, and clone this repository into your workspace. This enables you to edit notebooks and push commits back to GitHub.
+3. Add or create notebooks inside the `notebooks/` folder and save regularly so changes sync to GitHub.
+4. Add SQL transformations to `sql/` and automation code to `etl_pipeline/` as you progress through the course.
 
-### Part B — Join by Time Window
-- Join **DeviceMessage** and **RapidStepTest** on `deviceId` and overlapping timestamp ranges.
-- Note assumptions made for missing `deviceId` or timing edge cases.
+## README Guidance
+- Replace this text with your own description of the project and its purpose.
+- Document what you put in each folder (especially new notebooks or scripts) and how to run them.
+- Keep the README concise but clear enough that an instructor can find your work quickly.
 
-### Part C — Aggregate Sensor Readings
-- Aggregate distances per test and compute `n_readings`, `avg`, `min`, `max`, and `variance` of `distance_cm`.
-- Describe any additional feature ideas.
+## Checklist for Submission
+- [ ] Repository is connected to Databricks (commits show Databricks-originated notebook changes).
+- [ ] Required top-level folders exist: `notebooks/`, `sql/`, `etl_pipeline/`, `data_samples/`.
+- [ ] README clearly explains the project and the purpose of each folder.
+- [ ] Notebook and script updates are committed and pushed to GitHub.
 
-### Part D — Step Features & Labels
-- Create cadence features (`mean_step_ms`, `std_step_ms`, `cadence_steps_per_min`).
-- Choose a label (e.g., regression on `totalSteps`, classification on cadence buckets) and justify the choice.
-
-### Part E — Save Outputs
-- Export features as Delta and CSV (`/tmp/rapid_features_delta`, `/tmp/rapid_features_csv`).
-- Include screenshots or file listings showing the saved outputs.
-
-### Part F — Quality Checks
-- Confirm required columns exist, the dataset is non-empty, and `testTime` aligns with `stopTime - startTime` within ±50 ms.
-- Document the assertions used and their results.
-
-## Reflection Prompts (5–8 Sentences)
-Address the following in your notebook and summarize here:
-1. Which engineered features were most informative and why?
-2. What challenges did you encounter while cleaning or joining the datasets?
-3. How would you improve data quality in future iterations?
-4. Ethics: Discuss privacy risks (sensor + identity), mitigation strategies, fairness considerations, and maintaining integrity in AI work.
-
-## Submission Checklist
-- [ ] Notebook includes Parts A–F with explanations and results.
-- [ ] Features saved as both Delta and CSV formats.
-- [ ] Quality checks executed and passing.
-- [ ] Reflection completed.
-- [ ] Repository README updated with personal notes (optional but encouraged).
-
-## Honor Code Reminder
-Use Databricks AI helpers responsibly. Read, understand, and verify generated code before submission. Act with integrity, verify truth, respect privacy, and focus on learning how results are produced—not just obtaining them.
-
+## Notes on AI Usage
+You may use Databricks AI helpers to learn or generate ideas. Always read, understand, and verify generated code before trusting it. Write your own README content and create folders manually to ensure you fully understand your project structure.
